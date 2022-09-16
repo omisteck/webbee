@@ -15,7 +15,6 @@ class CreateCinemaSchema extends Migration
     Please list the tables that you would create including keys, foreign keys and attributes that are required by the user stories.
 
     ## User Stories
-
      **Movie exploration**
      * As a user I want to see which films can be watched and at what times
      * As a user I want to only see the shows which are not booked out
@@ -37,7 +36,57 @@ class CreateCinemaSchema extends Migration
      */
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        Schema::create('movies', function($table) {
+            $table->id();
+            $table->string('title');
+            $table->json('cast')->nullable();
+            $table->date("relase_date");
+            $table->timestamps();
+        });
+
+        Schema::create('cinemas', function($table) {
+            $table->id();
+            $table->string('name');
+            $table->string('location');
+            $table->string("country");
+            $table->timestamps();
+        });
+
+        Schema::create('Seats', function($table) {
+            $table->id();
+            $table->foreignId('cinema_id')->references('id')->on('cinemas')->onDelete('cascade');
+            $table->string('seat_number');
+            $table->string('category');
+            $table->double('pricing', 15, 8)->nullable()->default(123.4567);
+            $table->timestamps();
+        });
+
+        Schema::create('cinema_seat', function($table) {
+            $table->id();
+            $table->foreignId('cinema_id')->references('id')->on('cinemas')->onDelete('cascade');
+            $table->foreignId('seat_id')->references('id')->on('Seats')->onDelete('cascade');
+            $table->timestamps();
+        });
+        
+        Schema::create('shows', function($table) {
+            $table->id();
+            $table->foreignId('cinema_id')->references('id')->on('cinemas')->onDelete('cascade');
+            $table->foreignId('movie_id')->references('id')->on('movies')->onDelete('cascade');
+            $table->dateTime('start')->nullable()->default(new DateTime());
+            $table->dateTime('end')->nullable();
+            $table->bigInteger('slot')->default(100);
+            $table->timestamps();
+        });
+
+        Schema::create('user_ticket', function($table) {
+            $table->id();
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('show_id')->references('id')->on('shows')->onDelete('cascade');
+            $table->foreignId('seat_id')->references('id')->on('seats')->onDelete('cascade');
+            $table->dateTime('start')->nullable()->default(new DateTime());
+            $table->dateTime('end')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**
